@@ -20,21 +20,15 @@ from env.custom_hopper import *
 
 
 def main():
-	#env = gym.make('CustomHopper-source-v0')
-	env = gym.make('CustomHopper-target-v0')
+	env = gym.make('CustomHopper-source-v0')
+	# env = gym.make('CustomHopper-target-v0')
 
 	print('State space:', env.observation_space) # state-space
 	print('Action space:', env.action_space) # action-space
 	print('Dynamics parameters:', env.get_parameters()) # masses of each link of the Hopper
-	#state-space: it is an 11-dimensional continuous vector from -inf to inf
-	#action-space: 3-dimensional continuous vector from -1 to 1. It represents the torque to each joint
-	#source-mass: Dynamics parameters: [2.565634   4.05789051 2.7813567  5.31557477]
-	#target-mass: Dynamics parameters: [3.66519143 4.05789051 2.7813567  5.31557477]
-
-
 
 	n_episodes = 500
-	render = False
+	render = True
 
 	for episode in range(n_episodes):
 		done = False
