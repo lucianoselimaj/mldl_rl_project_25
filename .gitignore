@@ -4,3 +4,8 @@ __pycache__
 *egg-info
 *.pyc
 */pycache
+wandb/
+.vscode/
+wandb/
+tb_logs/
+models/
