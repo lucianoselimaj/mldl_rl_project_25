@@ -1,4 +1,4 @@
-"""Test an RL agent on the OpenAI Gym Hopper environment"""
+"""Test SAC's sb3 models on the OpenAI Gym Hopper environment"""
 import argparse
 
 import torch
