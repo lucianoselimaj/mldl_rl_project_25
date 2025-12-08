@@ -16,6 +16,8 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         MujocoEnv.__init__(self, 4)
         utils.EzPickle.__init__(self)
 
+        self.domain = domain
+
         self.original_masses = np.copy(self.sim.model.body_mass[1:])    # Default link masses
 
         if domain == 'source':  # Source environment has an imprecise torso mass (-30% shift)
@@ -27,15 +29,43 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
 
 
     def sample_parameters(self):
-        """Sample masses according to a domain randomization distribution"""
-        
-        #
-        # TASK 6: implement domain randomization. Remember to sample new dynamics parameter
-        #         at the start of each training episode.
-        
-        raise NotImplementedError()
+        """
+        Sample masses according to a Uniform Domain Randomization (UDR)
+        distribution.
 
-        return
+        - Torso mass (index 0 in this vector, body_mass[1] in Mujoco) is NOT randomized.
+        - Thigh, leg, and foot are randomized at each episode.
+        """
+
+        # Current masses in the simulator for this domain:
+        # [torso, thigh, leg, foot]
+        current_masses = np.copy(self.sim.model.body_mass[1:])
+
+        # Reference masses from hopper.xml: [torso_ref, thigh_ref, leg_ref, foot_ref]
+        torso_ref, thigh_ref, leg_ref, foot_ref = self.original_masses
+
+        # --- Define UDR ranges (hyperparameters) ---
+        # Here we choose ±30% around the reference masses.
+        # You can adjust these factors later if needed.
+        thigh_min, thigh_max = 0.7 * thigh_ref, 1.3 * thigh_ref
+        leg_min,   leg_max = 0.7 * leg_ref,   1.3 * leg_ref
+        foot_min,  foot_max = 0.7 * foot_ref,  1.3 * foot_ref
+
+        # --- Sample new randomized masses ---
+        m_thigh = np.random.uniform(thigh_min, thigh_max)
+        m_leg = np.random.uniform(leg_min,   leg_max)
+        m_foot = np.random.uniform(foot_min,  foot_max)
+
+        # - Keep the CURRENT torso mass fixed (already scaled in 'source' if needed).
+        # - Randomize only thigh, leg, foot.
+        randomized_masses = np.array([
+            current_masses[0],  # torso: do NOT randomize
+            m_thigh,
+            m_leg,
+            m_foot
+        ])
+
+        return randomized_masses
 
 
     def get_parameters(self):
@@ -81,6 +111,11 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         """Reset the environment to a random initial state"""
+
+        # Apply UDR ONLY in the source domain
+        if self.domain == 'source':
+            self.set_random_parameters()
+
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
         qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)
         self.set_state(qpos, qvel)
