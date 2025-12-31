@@ -3,6 +3,7 @@ import argparse
 
 import torch
 import gym
+import os
 
 from env.custom_hopper import *
 from stable_baselines3 import SAC
@@ -22,36 +23,39 @@ args = parse_args()
 
 def main():
 
-	env = gym.make('CustomHopper-source-v0')
-	# env = gym.make('CustomHopper-target-v0')
+    env = gym.make('CustomHopper-source-v0')
+    #env = gym.make('CustomHopper-target-v0')
 
-	print('Action space:', env.action_space)
-	print('State space:', env.observation_space)
-	print('Dynamics parameters:', env.get_parameters())
+    print('Action space:', env.action_space)
+    print('State space:', env.observation_space)
+    print('Dynamics parameters:', env.get_parameters())
 
-	model = SAC.load(args.model, device=args.device)
+    # Load from Sac/saved_models
+    # Assumes args.model is the filename (e.g. "sac_final_seed0_id_xyz")
+    model_path = os.path.join("Sac", "saved_models", args.model)
+    model = SAC.load(model_path, device=args.device)
 
-	for episode in range(args.episodes):
-		done = False
-		test_reward = 0
-		state = env.reset()
-		
+    for episode in range(args.episodes):
+       done = False
+       test_reward = 0
+       state = env.reset()
 
-		while not done:
 
-			action, _ = model.predict(state, deterministic=True)
+       while not done:
 
-			state, reward, done, info = env.step(action)
+          action, _ = model.predict(state, deterministic=True)
 
-			if args.render:
-				env.render()
-				
-				
+          state, reward, done, info = env.step(action)
 
-			test_reward += reward
+          if args.render:
+             env.render()
 
-		print(f"Episode: {episode} | Return: {test_reward}")
-	
+
+
+          test_reward += reward
+
+       print(f"Episode: {episode} | Return: {test_reward}")
+
 
 if __name__ == '__main__':
-	main()
+    main()
