@@ -71,7 +71,7 @@ def train_actor_critic(config=None, run_name=None):
 
     # Save model using the run name
     # Save to ActorCritic/saved_models
-    save_dir = os.path.join("ActorCritic", "saved_models")
+    save_dir = os.path.join("saved_models")
     os.makedirs(save_dir, exist_ok=True)
 
     # We use the run_name passed to the function (or wandb.run.name if available)

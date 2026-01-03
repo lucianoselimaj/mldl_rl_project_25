@@ -10,10 +10,10 @@ parameters:
     value: 100000
 
   actor_critic:
-    values: [true, false]
+    values: [false]
 
   baseline:
-    values: [0.0, 20.0]
+    values: [0.0]
 
   device:
     value: "cuda"

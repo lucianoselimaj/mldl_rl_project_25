@@ -22,7 +22,7 @@ def sweep_train():
 
         # Generate a unique name for this run based on params
         ac_type = "AC" if wandb.config.actor_critic else "REINFORCE"
-        run.name = f"{ac_type}_Base{cfg.baseline}_LR{cfg.learning_rate}"
+        run.name = f"{ac_type}_Base{cfg.baseline}_DR"
 
         # Call your training function
         train_actor_critic(config=wandb.config, run_name=run.name)

@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="mldl" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.8.20 WSL (Ubuntu): (/home/luciano/enter/envs/mldl/bin/python)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="mldl" project-jdk-type="Python SDK" />
 </project>
