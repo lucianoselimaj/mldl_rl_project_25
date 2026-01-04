@@ -13,7 +13,7 @@ parameters:
     values: [false]
 
   baseline:
-    values: [0.0]
+    values: [20.0]
 
   device:
     value: "cuda"
