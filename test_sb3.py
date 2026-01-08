@@ -32,9 +32,9 @@ def main():
 
     # Load from Sac/saved_models
     # Assumes args.model is the filename (e.g. "sac_final_seed0_id_xyz")
-    model_path = os.path.join("Sac", "saved_models", args.model)
+    model_path = os.path.join("saved_models", args.model)
     model = SAC.load(model_path, device=args.device)
-
+    all_rewards = []
     for episode in range(args.episodes):
        done = False
        test_reward = 0
@@ -53,8 +53,11 @@ def main():
 
 
           test_reward += reward
-
+       all_rewards.append(test_reward)
        print(f"Episode: {episode} | Return: {test_reward}")
+    print(f"Mean_rewards: {np.mean(all_rewards)}")
+    print(f"Std_rewards: {np.std(all_rewards)}")
+
 
 
 if __name__ == '__main__':
