@@ -21,7 +21,7 @@ def sweep_train():
 
         # Generate a unique name for this run based on params
         ac_type = "AC" if cfg.actor_critic else "REINFORCE"
-        run.name = f"{ac_type}_Base{cfg.baseline}_DR"
+        run.name = f"{ac_type}_Base{cfg.baseline}_Seed{cfg.seed}"
 
         # Call your training function
         train_actor_critic(config=cfg, run_name=run.name)

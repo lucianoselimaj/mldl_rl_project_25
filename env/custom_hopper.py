@@ -52,9 +52,9 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         foot_min,  foot_max = 0.7 * foot_ref,  1.3 * foot_ref
 
         # --- Sample new randomized masses ---
-        m_thigh = np.random.uniform(thigh_min, thigh_max)
-        m_leg = np.random.uniform(leg_min,   leg_max)
-        m_foot = np.random.uniform(foot_min,  foot_max)
+        m_thigh = self.np_random.uniform(thigh_min, thigh_max)
+        m_leg = self.np_random.uniform(leg_min,   leg_max)
+        m_foot = self.np_random.uniform(foot_min,  foot_max)
 
         # - Keep the CURRENT torso mass fixed (already scaled in 'source' if needed).
         # - Randomize only thigh, leg, foot.
@@ -113,9 +113,9 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         """Reset the environment to a random initial state"""
 
         # --- FOR PHASE 1: COMMENT THIS OUT ---
-        # if self.domain == 'source':
-        #     self.set_random_parameters()
-        # -------------------------------------
+        if self.domain == 'source':
+            self.set_random_parameters()
+
 
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
         qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)

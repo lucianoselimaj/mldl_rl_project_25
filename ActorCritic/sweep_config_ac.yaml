@@ -9,11 +9,15 @@ parameters:
   n_episodes:
     value: 100000
 
+
   actor_critic:
-    values: [false]
+    values: [true]
 
   baseline:
     values: [20.0]
 
   device:
     value: "cuda"
+
+  seed:
+    values: [42]
