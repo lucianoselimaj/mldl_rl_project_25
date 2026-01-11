@@ -12,7 +12,7 @@ def sweep_train():
     def run_sweep():
         run = wandb.init(project="sac-hopper", sync_tensorboard=True)
         cfg = wandb.config
-        run.name = f"SAC_seed{cfg.seed}_DR"
+        run.name = f"SAC_seed{cfg.seed}_basic"
         train_sac(config=dict(cfg), run_name=run.name)
         wandb.finish()
 

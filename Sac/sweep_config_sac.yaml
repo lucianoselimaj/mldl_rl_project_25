@@ -8,11 +8,11 @@ parameters:
   policy:
     value: "MlpPolicy"
   seed:
-    values: [43]
+    values: [44]
 
   # Training parameters
   total_timesteps:
-    value: 100000
+    value: 1000000
   learning_starts:
     value: 10000
   train_freq:
