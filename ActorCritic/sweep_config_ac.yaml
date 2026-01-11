@@ -7,14 +7,13 @@ parameters:
     value: "CustomHopper-source-v0"
 
   n_episodes:
-    value: 100000
-
+    value: 50000
 
   actor_critic:
-    values: [true]
+    values: [true, false]
 
   baseline:
-    values: [20.0]
+    values: [0.0, 20.0]
 
   device:
     value: "cuda"

@@ -11,12 +11,12 @@ def sweep_train():
         sweep_config = yaml.safe_load(f)
 
     # 2. Create the sweep on WandB servers
-    sweep_id = wandb.sweep(sweep=sweep_config, project="actor-critic-hopper")
+    sweep_id = wandb.sweep(sweep=sweep_config, project="ac-reinforce-hopper-seed")
 
     # 3. Define the function that the agent will execute
     def run_sweep():
         # Initialize the run
-        run = wandb.init(project="actor-critic-hopper")
+        run = wandb.init(project="ac-reinforce-hopper-seed")
         cfg = wandb.config
 
         # Generate a unique name for this run based on params
