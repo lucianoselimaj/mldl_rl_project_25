@@ -1,7 +1,7 @@
 import wandb, yaml
 from train_sac import train_sac
 
-SWEEP_CONFIG_PATH = "sweep_config_sac.yaml"
+SWEEP_CONFIG_PATH = "Sac/sweep_config_sac.yaml"
 
 def sweep_train():
     with open(SWEEP_CONFIG_PATH) as f:
@@ -12,7 +12,9 @@ def sweep_train():
     def run_sweep():
         run = wandb.init(project="sac-hopper", sync_tensorboard=True)
         cfg = wandb.config
+
         run.name = f"SAC_seed{cfg.seed}_basic"
+
         train_sac(config=dict(cfg), run_name=run.name)
         wandb.finish()
 

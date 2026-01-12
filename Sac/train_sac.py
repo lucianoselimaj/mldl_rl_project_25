@@ -19,20 +19,26 @@ class PerEpisodeWandbCallback(BaseCallback):
         for info in infos:
             if "episode" in info:  # requires Monitor
                 self.ep += 1
-                # IMPORTANT: this is HISTORY (plottable)
-                wandb.log(
-                    {
-                        "episode": self.ep,
-                        "episode_return": info["episode"]["r"],
-                        "episode_length": info["episode"]["l"],
-                    },
-                    step=self.num_timesteps,
-                )
+                log_dict = {
+                    "episode": self.ep,  
+                    "episode_return": info["episode"]["r"],
+                    "episode_length": info["episode"]["l"],
+                }
+
+                env = self.model.env.envs[0].unwrapped
+                masses = env.get_parameters()
+                    
+                log_dict.update({
+                    "curriculum/mass_thigh": masses[1],
+                    "curriculum/mass_leg":   masses[2],
+                    "curriculum/mass_foot":  masses[3],
+                })
+                wandb.log(log_dict, step=self.num_timesteps)
         return True
 
 
 def train_sac(config, run_name):
-    train_env = Monitor(gym.make(config["env_id"]))
+    train_env = Monitor(gym.make(config["env_id"], use_ext=True, gmm_seed=config["seed"]))
 
     policy_kwargs = {
         "net_arch": {

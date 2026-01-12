@@ -6,11 +6,11 @@ from matplotlib.patches import Ellipse
 class FailureGMMCurriculum:
     def __init__(self, nominal_masses, buffer_size=1000, warmup_episodes=50, n_components=2, limit_percentage=0.3, seed=42):
         """
-        nominal_masses: array dei pesi standard.
-        limit_percentage: limite massimo di variazione (es. 0.3 = +/- 30%).
+        nominal_masses: masses array 
+        limit_percentage:  +/- 30%
         """
         self.seed = seed
-        # 1. Definisci nominal_masses (Questo è ciò che mancava/causava l'errore)
+        
         self.nominal_masses = np.array(nominal_masses)
         self.n_params = len(nominal_masses)
         
@@ -82,22 +82,22 @@ class FailureGMMCurriculum:
                 np.linalg.inv(self.gmm.covariances_)
             )
         except Exception as e:
-            print(f"[Curriculum Error] Fitting failed: {e}")
+            print(f"Curriculum  Fitting failed: {e}")
             self.gmm = None
 
     def sample_task(self):
         """
-        Strategia Ibrida: Rejection Sampling con Safety Fallback.
+        Rejection sampling + Safety fallback.
+
         """
         is_warmup = self.episode_count < self.warmup_episodes
         do_uniform = np.random.random() > self.mix_ratio
         
-        # Caso A: Uniforme o Warmup (Nessun problema qui)
+        # First case: uniform or warmup 
         if is_warmup or do_uniform or self.gmm is None:
-            # FIX: Usa lower_bound e upper_bound pre-calcolati, NON nominal_masses * random
             return np.random.uniform(self.lower_bound, self.upper_bound)
 
-        # Caso B: GMM con Rejection Sampling
+        # Second case: GMM with rejection sampling
         try:
             candidates, _ = self.gmm.sample(n_samples=500)
             
@@ -107,7 +107,7 @@ class FailureGMMCurriculum:
             if np.any(valid_mask):
                 return candidates[valid_mask][0]
             
-            # Caso C: Fallback
+            # Third case: fallback
             return np.clip(candidates[0], self.lower_bound, self.upper_bound)
             
         except Exception:
@@ -115,7 +115,7 @@ class FailureGMMCurriculum:
 
     def debug_plot(self):
         if self.gmm is None:
-            print("Modello non ancora fittato.")
+            print("Model is not fitted yet.")
             return
 
         data = np.array(self.history_params)
