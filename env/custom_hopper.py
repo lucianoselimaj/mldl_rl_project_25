@@ -21,7 +21,20 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         self.cumulative_reward = 0
         self.episode_count = 0
         
+        self.curriculum = None
+
+        MujocoEnv.__init__(self, 4)
+        utils.EzPickle.__init__(self)
+
+        self.domain = domain
+        self.original_masses = np.copy(self.sim.model.body_mass[1:])    # Default link masses
+
+        if domain == 'source':  # Source environment has an imprecise torso mass (-30% shift)
+            self.sim.model.body_mass[1] *= 0.7
+        
         if self.use_ext:
+            # Curriculum initialization
+            active_masses = self.original_masses[1:] 
             self.curriculum = FailureGMMCurriculum(
                 nominal_masses=active_masses,
                 buffer_size=1000,
@@ -31,22 +44,8 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
             )
         else:
             self.curriculum = None
-
-        MujocoEnv.__init__(self, 4)
-        utils.EzPickle.__init__(self)
-
-        self.domain = domain
-
-        self.original_masses = np.copy(self.sim.model.body_mass[1:])    # Default link masses
-
-        if domain == 'source':  # Source environment has an imprecise torso mass (-30% shift)
-            self.sim.model.body_mass[1] *= 0.7
-        
-        # Curriculum initialization
-        active_masses = self.original_masses[1:] 
         
         
-
     def set_random_parameters(self):
         """Set random masses"""
         self.set_parameters(self.sample_parameters(ext=self.use_ext))
@@ -133,9 +132,6 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         # Step customized for curriculum
         self.cumulative_reward += reward # Accumulate reward
 
-        # Update steps count of curriculum
-        if self.curriculum is not None:
-            self.curriculum.count_step()
     
         if done:
             # Map current_active_params to cumulative_reward
