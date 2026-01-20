@@ -39,6 +39,24 @@ class AdversarialBeta:
 
         self.episode_count = 0
 
+        self.history = {
+            'episode': [],
+            'alphas': [],
+            'betas': [],
+            'means': [] 
+        }
+    
+    def _log_history(self):
+        """Salva uno snapshot dei parametri correnti"""
+        self.history['episode'].append(self.episode_count)
+        self.history['alphas'].append(self.alphas.copy()) # .copy() è fondamentale!
+        self.history['betas'].append(self.betas.copy())
+        
+        # Calcola la media della distribuzione Beta: Mean = a / (a+b)
+        # Questo ci dice se il curriculum sta spingendo verso masse alte (>0.5) o basse (<0.5)
+        current_means = self.alphas / (self.alphas + self.betas)
+        self.history['means'].append(current_means)
+
     def normalize(self, params):
         """Map from [Lower, Upper] to [0, 1]"""
         return (params - self.lower) / (self.range + 1e-8)
@@ -63,14 +81,14 @@ class AdversarialBeta:
         """
 
         if self.episode_count < self.warmup_episodes:
-            return
+            return False
 
         # Bottom self.failure_percentile% rewards are failures
         threshold = np.percentile(self.buffer_rewards, self.failure_percentile)
         fail_indices = [i for i, r in enumerate(self.buffer_rewards) if r <= threshold]
         
         if len(fail_indices) < 10: 
-            return # Troppo pochi dati per fittare una distribuzione
+            return False
             
         fail_data = np.array(self.buffer_params)[fail_indices]
 
@@ -105,6 +123,10 @@ class AdversarialBeta:
             # Soft update of betas
             self.alphas[dim] = (1 - self.tau) * self.alphas[dim] + self.tau * new_alpha
             self.betas[dim]  = (1 - self.tau) * self.betas[dim]  + self.tau * new_beta
+
+        self._log_history()
+        return True
+
 
     def sample_task(self):
         """Sample parameters"""

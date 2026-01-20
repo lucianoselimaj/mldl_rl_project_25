@@ -146,11 +146,12 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
                     
                     # Every 30 episodes update strategy
                     if self.episode_count % 30 == 0:
-                        self.curriculum.fit_model()
-                        print("Adverarial Betas updated")
-                        # Optional:
-                        diag = self.curriculum.get_diagnostics()
-                        print(f"Curriculum Update Ep {diag['ep']}: Alphas={diag['alphas']}")
+                        update = self.curriculum.fit_model()
+                        if update:
+                            print("Adverarial Betas updated")
+                            # Optional:
+                            diag = self.curriculum.get_diagnostics()
+                            print(f"Curriculum Update Ep {diag['ep']}: Alphas={diag['alphas']}")
             
             # Reset for next episode
             self.cumulative_reward = 0
@@ -173,8 +174,8 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         self.current_active_params = None
         
         # --- FOR PHASE 1: COMMENT THIS OUT ---
-        #if self.domain == 'source':
-        #    self.set_random_parameters()
+        if self.domain == 'source':
+            self.set_random_parameters()
         # -------------------------------------
 
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
