@@ -1,6 +1,7 @@
 import os
 import torch
 import wandb
+import random
 
 from env.custom_hopper import *
 from stable_baselines3 import SAC
@@ -11,6 +12,14 @@ from wandb.integration.sb3 import WandbCallback
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import beta as beta_dist
+
+def set_seed(seed):
+    """Minimal seeding: enough for fair comparisons."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)       # policy init + action sampling
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 def plot_curriculum_dynamics(adv_beta_instance, param_names=["Thigh", "Leg", "Foot"]):
     """
@@ -126,7 +135,14 @@ class PerEpisodeWandbCallback(BaseCallback):
 
 
 def train_sac(config, run_name):
-    train_env = Monitor(gym.make(config["env_id"], use_ext=True, gmm_seed=config["seed"]))
+    # reproducibility
+    np.random.seed(config["seed"])
+    torch.manual_seed(config["seed"])
+    set_seed(config["seed"])
+
+    train_env = Monitor(gym.make(config["env_id"], use_ext=False, gmm_seed=config["seed"]))
+    train_env.seed(config["seed"])
+    train_env.action_space.seed(config["seed"])
 
     policy_kwargs = {
         "net_arch": {
