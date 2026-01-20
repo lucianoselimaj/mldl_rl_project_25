@@ -10,6 +10,7 @@ import gym
 from gym import utils
 from .mujoco_env import MujocoEnv
 from Sac.curriculum import FailureGMMCurriculum
+from Sac.adversarial_beta import AdversarialBeta
 
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
@@ -33,13 +34,16 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
             self.sim.model.body_mass[1] *= 0.7
         
         if self.use_ext:
-            # Curriculum initialization
+            # Beta initialization
             active_masses = self.original_masses[1:] 
-            self.curriculum = FailureGMMCurriculum(
+            self.curriculum = AdversarialBeta(
                 nominal_masses=active_masses,
-                buffer_size=1000,
-                warmup_episodes=50,
+                buffer_size=300,
+                warmup_episodes=750,
                 limit_percentage=0.3, # +/- 30%
+                mix_ratio=0.5,          # 50% Uniforme / 50% Curriculum (Equilibrio)
+                tau=0.1,                # Soft Update rate
+                max_alpha_beta=80.0,
                 seed=self.gmm_seed,        
             )
         else:
@@ -140,10 +144,13 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
                     self.curriculum.add_experience(self.current_active_params, self.cumulative_reward)
                     self.episode_count += 1
                     
-                    # Every 50 episodes update strategy
-                    if self.episode_count % 50 == 0:
+                    # Every 30 episodes update strategy
+                    if self.episode_count % 30 == 0:
                         self.curriculum.fit_model()
-                        print("GMM Aggiornata!")
+                        print("Adverarial Betas updated")
+                        # Optional:
+                        diag = self.curriculum.get_diagnostics()
+                        print(f"Curriculum Update Ep {diag['ep']}: Alphas={diag['alphas']}")
             
             # Reset for next episode
             self.cumulative_reward = 0
@@ -166,8 +173,8 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         self.current_active_params = None
         
         # --- FOR PHASE 1: COMMENT THIS OUT ---
-        if self.domain == 'source':
-            self.set_random_parameters()
+        #if self.domain == 'source':
+        #    self.set_random_parameters()
         # -------------------------------------
 
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
