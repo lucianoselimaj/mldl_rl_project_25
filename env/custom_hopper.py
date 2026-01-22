@@ -27,6 +27,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         MujocoEnv.__init__(self, 4)
         utils.EzPickle.__init__(self)
 
+        self.seed(self.gmm_seed)
         self.domain = domain
         self.original_masses = np.copy(self.sim.model.body_mass[1:])    # Default link masses
 
@@ -174,8 +175,8 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         self.current_active_params = None
         
         # --- FOR PHASE 1: COMMENT THIS OUT ---
-        if self.domain == 'source':
-            self.set_random_parameters()
+        #if self.domain == 'source':
+            #self.set_random_parameters()
         # -------------------------------------
 
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
