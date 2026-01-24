@@ -41,7 +41,7 @@ def main():
     policy.load_state_dict(torch.load(model_path), strict=True)
 
     agent = Agent(policy, device=args.device)
-
+    all_rewards = []
     for episode in range(args.episodes):
         done = False
         test_reward = 0
@@ -58,7 +58,10 @@ def main():
 
             test_reward += reward
 
+        all_rewards.append(test_reward)
         print(f"Episode: {episode} | Return: {test_reward}")
+    print(f"Mean_rewards: {np.mean(all_rewards)}")
+    print(f"Std_rewards: {np.std(all_rewards)}")
 
 
 if __name__ == '__main__':
