@@ -23,8 +23,9 @@ args = parse_args()
 
 def main():
 
-    env = gym.make('CustomHopper-source-v0')
-    #env = gym.make('CustomHopper-target-v0')
+    #env = gym.make('CustomHopper-source-v0')
+    env = gym.make('CustomHopper-target-v0')
+
 
     print('Action space:', env.action_space)
     print('State space:', env.observation_space)
@@ -32,7 +33,7 @@ def main():
 
     # Load from Sac/saved_models
     # Assumes args.model is the filename (e.g. "sac_final_seed0_id_xyz")
-    model_path = os.path.join("saved_models", args.model)
+    model_path = os.path.join("Sac", "saved_models", args.model)
     model = SAC.load(model_path, device=args.device)
     all_rewards = []
     for episode in range(args.episodes):
