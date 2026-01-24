@@ -4,7 +4,7 @@ class AdversarialBeta:
     def __init__(self, nominal_masses, 
                  limit_percentage=0.3,   # +/- 30%
                  buffer_size=300,        # Optimized for approximately 3000 ep in total
-                 warmup_episodes=750,
+                 warmup_episodes=750,    # When you set this value consider the Sac warmup phase and the buffer_size
                  mix_ratio=0.5,          # 50% Uniform, 50% Adv beta 
                  tau=0.1,                # Soft update rate
                  max_alpha_beta=80.0,    # Clipping to avoid overfitting 
@@ -42,21 +42,15 @@ class AdversarialBeta:
         self.history = {
             'episode': [],
             'alphas': [],
-            'betas': [],
-            'means': [] 
+            'betas': []
         }
     
     def _log_history(self):
-        """Salva uno snapshot dei parametri correnti"""
+        """Save current distribution parameters"""
         self.history['episode'].append(self.episode_count)
-        self.history['alphas'].append(self.alphas.copy()) # .copy() è fondamentale!
+        self.history['alphas'].append(self.alphas.copy())
         self.history['betas'].append(self.betas.copy())
         
-        # Calcola la media della distribuzione Beta: Mean = a / (a+b)
-        # Questo ci dice se il curriculum sta spingendo verso masse alte (>0.5) o basse (<0.5)
-        current_means = self.alphas / (self.alphas + self.betas)
-        self.history['means'].append(current_means)
-
     def normalize(self, params):
         """Map from [Lower, Upper] to [0, 1]"""
         return (params - self.lower) / (self.range + 1e-8)
