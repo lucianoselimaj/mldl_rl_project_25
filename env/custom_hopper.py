@@ -14,10 +14,10 @@ from Sac.adversarial_beta import AdversarialBeta
 
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
-    def __init__(self, domain=None, use_ext=False, gmm_seed=42):
+    def __init__(self, domain=None, use_ext=False, curriculum_seed=42):
         
         self.use_ext = use_ext
-        self.gmm_seed = gmm_seed # Seed for the GaussianMixtureModel
+        self.curriculum_seed = curriculum_seed # Seed for AdvBeta
         self.current_active_params = None
         self.cumulative_reward = 0
         self.episode_count = 0
@@ -27,7 +27,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         MujocoEnv.__init__(self, 4)
         utils.EzPickle.__init__(self)
 
-        self.seed(self.gmm_seed)
+        self.seed(self.adv_seed)
         self.domain = domain
         self.original_masses = np.copy(self.sim.model.body_mass[1:])    # Default link masses
 
@@ -42,10 +42,10 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
                 buffer_size=300,
                 warmup_episodes=750,
                 limit_percentage=0.3, # +/- 30%
-                mix_ratio=0.5,          # 50% Uniforme / 50% Curriculum (Equilibrio)
-                tau=0.1,                # Soft Update rate
+                mix_ratio=0.5,          # 50% uniform / 50% curriculum
+                tau=0.1,                # Soft update rate
                 max_alpha_beta=80.0,
-                seed=self.gmm_seed,        
+                seed=self.curriculum_seed,        
             )
         else:
             self.curriculum = None
@@ -175,8 +175,8 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         self.current_active_params = None
         
         # --- FOR PHASE 1: COMMENT THIS OUT ---
-        #if self.domain == 'source':
-            #self.set_random_parameters()
+        if self.domain == 'source':
+            self.set_random_parameters()
         # -------------------------------------
 
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
