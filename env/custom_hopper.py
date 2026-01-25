@@ -27,7 +27,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         MujocoEnv.__init__(self, 4)
         utils.EzPickle.__init__(self)
 
-        self.seed(self.adv_seed)
+        self.seed(self.curriculum_seed)
         self.domain = domain
         self.original_masses = np.copy(self.sim.model.body_mass[1:])    # Default link masses
 
@@ -44,7 +44,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
                 limit_percentage=0.3, # +/- 30%
                 mix_ratio=0.5,          # 50% uniform / 50% curriculum
                 tau=0.1,                # Soft update rate
-                max_alpha_beta=80.0,
+                max_alpha_beta=80.0,    # Upper bound on alpha and beta values
                 seed=self.curriculum_seed,        
             )
         else:
@@ -74,7 +74,6 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
             return np.concatenate(([current_torso_mass], self.current_active_params))
         else: 
             # Run UDR
-
             # Current masses in the simulator for this domain:
             current_masses = np.copy(self.sim.model.body_mass[1:])
 
