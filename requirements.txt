@@ -7,3 +7,5 @@ Jinja2==3.1.2
 scipy
 patchelf
 wandb
+scikit-learn
+matplotlib
