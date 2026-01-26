@@ -1,0 +1,63 @@
+Wed Nov  5 08:49:49 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 08:50:46 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 08:55:32 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 09:03:32 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 09:10:01 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 09:22:31 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 14:53:26 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 14:54:46 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 14:55:56 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 15:16:08 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 16:04:14 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 16:09:36 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 16:09:57 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 16:15:12 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 16:17:42 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 16:22:10 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 16:59:30 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 17:45:47 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 17:46:33 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Wed Nov  5 17:47:05 2025
+ERROR: GLEW initalization error: Missing GL version
+
+Tue Dec  2 18:47:20 2025
+ERROR: GLEW initalization error: Missing GL version
+

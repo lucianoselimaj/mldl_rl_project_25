@@ -1,0 +1,22 @@
+method: grid
+metric:
+  name: training/episode_return
+  goal: maximize
+parameters:
+  env_id:
+    value: "CustomHopper-source-v0"
+
+  n_episodes:
+    value: 50000
+
+  actor_critic:
+    values: [true, false]
+
+  baseline:
+    values: [0.0, 20.0]
+
+  device:
+    value: "cuda"
+
+  seed:
+    values: [42]

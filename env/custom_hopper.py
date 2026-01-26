@@ -9,33 +9,97 @@ import numpy as np
 import gym
 from gym import utils
 from .mujoco_env import MujocoEnv
+from Sac.curriculum import FailureGMMCurriculum
+from Sac.adversarial_beta import AdversarialBeta
 
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
-    def __init__(self, domain=None):
+    def __init__(self, domain=None, use_ext=False, curriculum_seed=42):
+        
+        self.use_ext = use_ext
+        self.curriculum_seed = curriculum_seed # Seed for AdvBeta
+        self.current_active_params = None
+        self.cumulative_reward = 0
+        self.episode_count = 0
+        
+        self.curriculum = None
+
         MujocoEnv.__init__(self, 4)
         utils.EzPickle.__init__(self)
 
+        self.seed(self.curriculum_seed)
+        self.domain = domain
         self.original_masses = np.copy(self.sim.model.body_mass[1:])    # Default link masses
 
         if domain == 'source':  # Source environment has an imprecise torso mass (-30% shift)
             self.sim.model.body_mass[1] *= 0.7
-
+        
+        if self.use_ext:
+            # Beta initialization
+            active_masses = self.original_masses[1:] 
+            self.curriculum = AdversarialBeta(
+                nominal_masses=active_masses,
+                buffer_size=300,
+                warmup_episodes=750,
+                limit_percentage=0.3, # +/- 30%
+                mix_ratio=0.5,          # 50% uniform / 50% curriculum
+                tau=0.1,                # Soft update rate
+                max_alpha_beta=80.0,    # Upper bound on alpha and beta values
+                seed=self.curriculum_seed,        
+            )
+        else:
+            self.curriculum = None
+        
+        
     def set_random_parameters(self):
         """Set random masses"""
-        self.set_parameters(self.sample_parameters())
+        self.set_parameters(self.sample_parameters(ext=self.use_ext))
 
 
-    def sample_parameters(self):
-        """Sample masses according to a domain randomization distribution"""
-        
-        #
-        # TASK 6: implement domain randomization. Remember to sample new dynamics parameter
-        #         at the start of each training episode.
-        
-        raise NotImplementedError()
+    def sample_parameters(self, ext=False):
+        """
+        Sample masses according to a Uniform Domain Randomization (UDR)
+        distribution.
 
-        return
+        - Torso mass (index 0 in this vector, body_mass[1] in Mujoco) is NOT randomized.
+        - Thigh, leg, and foot are randomized at each episode.
+        """
+        if ext:
+            # Sampling
+            self.current_active_params = self.curriculum.sample_task()
+
+            # Fix torso
+            current_torso_mass = self.sim.model.body_mass[1]
+
+            return np.concatenate(([current_torso_mass], self.current_active_params))
+        else: 
+            # Run UDR
+            # Current masses in the simulator for this domain:
+            current_masses = np.copy(self.sim.model.body_mass[1:])
+
+            # Reference masses 
+            torso_ref, thigh_ref, leg_ref, foot_ref = self.original_masses
+
+            # Define UDR ranges 
+            thigh_min, thigh_max = 0.7 * thigh_ref, 1.3 * thigh_ref
+            leg_min,   leg_max = 0.7 * leg_ref,   1.3 * leg_ref
+            foot_min,  foot_max = 0.7 * foot_ref,  1.3 * foot_ref
+
+            # Sample new randomized masses 
+            m_thigh = self.np_random.uniform(thigh_min, thigh_max)
+            m_leg = self.np_random.uniform(leg_min,   leg_max)
+            m_foot = self.np_random.uniform(foot_min,  foot_max)
+
+            # Randomize thigh, leg, foot
+            randomized_masses = np.array([
+                current_masses[0],  # torso not randomized
+                m_thigh,
+                m_leg,
+                m_foot
+            ])
+
+            return randomized_masses
+
 
 
     def get_parameters(self):
@@ -68,6 +132,30 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() and (height > .7) and (abs(ang) < .2))
         ob = self._get_obs()
 
+        # -----------------------------
+        # Step customized for curriculum
+        self.cumulative_reward += reward # Accumulate reward
+
+    
+        if done:
+            # Map current_active_params to cumulative_reward
+            if self.use_ext and (self.curriculum is not None):
+                if self.current_active_params is not None:
+                    self.curriculum.add_experience(self.current_active_params, self.cumulative_reward)
+                    self.episode_count += 1
+                    
+                    # Every 30 episodes update strategy
+                    if self.episode_count % 30 == 0:
+                        update = self.curriculum.fit_model()
+                        if update:
+                            print("Adverarial Betas updated")
+                            # Optional:
+                            diag = self.curriculum.get_diagnostics()
+                            print(f"Curriculum Update Ep {diag['ep']}: Alphas={diag['alphas']}")
+            
+            # Reset for next episode
+            self.cumulative_reward = 0
+    # -----------------------------
         return ob, reward, done, {}
 
 
@@ -81,6 +169,15 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         """Reset the environment to a random initial state"""
+        self.cumulative_reward = 0
+        # Security reset at each episode for curriculum
+        self.current_active_params = None
+        
+        # --- FOR PHASE 1: COMMENT THIS OUT ---
+        if self.domain == 'source':
+            self.set_random_parameters()
+        # -------------------------------------
+
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
         qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)
         self.set_state(qpos, qvel)
