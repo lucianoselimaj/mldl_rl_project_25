@@ -76,8 +76,15 @@ class PerEpisodeWandbCallback(BaseCallback):
 
 
 def train_sac(config, run_name):
-    
-    train_env = Monitor(gym.make(config["env_id"], use_ext=True, curriculum_seed=config["seed"]))
+
+    train_env = Monitor(
+        gym.make(
+            config["env_id"],
+            use_ext=bool(config.get("use_ext", False)),
+            curriculum_seed=int(config["seed"]),
+            randomize_on_reset=bool(config.get("randomize_on_reset", True)),
+        )
+    )
 
     policy_kwargs = {
         "net_arch": {

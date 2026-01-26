@@ -53,3 +53,61 @@ NOTE 2: you need to stay connected to the Google Colab interface at all times fo
 - if you get a `cannot find -lGL` error when importing mujoco_py for the first time, then have a look at my solution in [#763](https://github.com/openai/mujoco-py/issues/763#issuecomment-1519090452)
 - if you get a `fatal error: GL/osmesa.h: No such file or directory` error, make sure you export the CPATH variable as mentioned in mujoco-py[#627](https://github.com/openai/mujoco-py/issues/627)
 - if you get a `Cannot assign type 'void (const char *) except * nogil' to 'void`, then run `pip install "cython<3"` (see issue [#773](https://github.com/openai/mujoco-py/issues/773))
+
+---
+
+## Project Implementation and Experiments
+
+This repository extends the official MLDL 2025 Project 4 template by implementing and evaluating multiple reinforcement learning algorithms and domain randomization strategies for sim-to-real transfer on the MuJoCo Hopper environment.
+
+The objective of the project is to analyze how different domain randomization techniques affect **robustness**, **stability**, and **generalization** when transferring policies from a simulated **source** environment to a **target** environment with different physical parameters.
+
+The experimental comparison focuses on three settings:
+- **No Domain Randomization (No-DR)**: fixed physical parameters
+- **Uniform Domain Randomization (UDR)**: uniform sampling of selected link masses
+- **Adversarial Beta Curriculum (AdvBeta)**: failure-driven curriculum learning over physical parameters
+
+All experiments are performed using multiple random seeds to ensure fair and reproducible results.
+
+---
+
+## Environment Design (Source and Target Domains)
+
+A custom version of the MuJoCo Hopper environment is implemented to explicitly model sim-to-real mismatch.
+- The **source domain** introduces a controlled modeling bias by modifying the torso mass.
+- The **target domain** represents the nominal physical parameters and is used for transfer evaluation.
+
+The environment behavior is controlled dynamically at runtime using two flags:
+- `randomize_on_reset`: enables mass randomization at each episode reset.
+- `use_ext`: enables curriculum-based sampling using the Adversarial Beta method.
+
+---
+
+## Domain Randomization Strategies
+
+Three domain randomization strategies are considered:
+
+### 1. No Domain Randomization (No-DR)
+Physical parameters remain fixed throughout training and evaluation.
+
+### 2. Uniform Domain Randomization (UDR)
+Thigh, leg, and foot masses are sampled uniformly within **±30%** of their nominal values at each episode reset.
+
+### 3. Adversarial Beta Curriculum (AdvBeta)
+A curriculum is learned online by fitting Beta distributions over parameters that lead to low returns. Sampling is performed by mixing uniform exploration with curriculum-driven sampling.
+
+The following flag combinations are used:
+
+| Strategy | `use_ext` | `randomize_on_reset` |
+| :--- | :--- | :--- |
+| **No-DR** | `false` | `false` |
+| **UDR** | `false` | `true` |
+| **AdvBeta** | `true` | `true` |
+
+> **Note:** The combination `use_ext=true` and `randomize_on_reset=false` is intentionally avoided, as the curriculum would never be applied.
+
+---
+
+## Installation Check
+
+After installing all dependencies and MuJoCo (see sections above), verify the setup by running:
