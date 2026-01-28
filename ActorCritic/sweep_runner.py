@@ -20,8 +20,10 @@ def sweep_train():
         cfg = wandb.config
 
         # Generate a unique name for this run based on params
-        ac_type = "AC" if cfg.actor_critic else "REINFORCE"
-        run.name = f"{ac_type}_Base{cfg.baseline}_Seed{cfg.seed}"
+        if cfg.actor_critic:
+            run.name = f"AC_Seed{cfg.seed}"
+        else:
+            run.name = f"REINFORCE_Base{cfg.baseline}_Seed{cfg.seed}"
 
         # Call your training function
         train_actor_critic(config=cfg, run_name=run.name)

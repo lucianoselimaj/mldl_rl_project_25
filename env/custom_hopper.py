@@ -172,11 +172,9 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         self.cumulative_reward = 0
         # Security reset at each episode for curriculum
         self.current_active_params = None
-        
-        # --- FOR PHASE 1: COMMENT THIS OUT ---
-        if self.domain == 'source':
+
+        if self.randomize_on_reset:
             self.set_random_parameters()
-        # -------------------------------------
 
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
         qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)

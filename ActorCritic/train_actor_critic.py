@@ -33,7 +33,10 @@ def train_actor_critic(config=None, run_name=None):
     # ------------------------
 
     env_id = getattr(cfg, "env_id", "CustomHopper-source-v0")
-    env = gym.make(env_id)
+    env = gym.make(
+        env_id,
+        randomize_on_reset=bool(getattr(cfg, "randomize_on_reset", True))
+    )
 
     print('Action space:', env.action_space)
     print('State space:', env.observation_space)

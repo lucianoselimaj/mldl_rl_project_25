@@ -5,6 +5,8 @@ metric:
 parameters:
   env_id:
     value: "CustomHopper-source-v0"
+  randomize_on_reset:
+    values: [ true, false ]
 
   n_episodes:
     value: 50000
@@ -19,4 +21,5 @@ parameters:
     value: "cuda"
 
   seed:
-    values: [42]
+    values: [42,43,44]
+

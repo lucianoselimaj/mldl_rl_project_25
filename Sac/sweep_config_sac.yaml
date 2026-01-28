@@ -8,7 +8,11 @@ parameters:
   policy:
     value: "MlpPolicy"
   seed:
-    values: [44]
+    values: [42,43,44]
+  use_ext:
+    values: [ true, false ]
+  randomize_on_reset:
+    values: [ true, false ]
 
   # Training parameters
   total_timesteps:

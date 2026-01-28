@@ -15,6 +15,8 @@ def parse_args():
     parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
     parser.add_argument('--render', default=False, action='store_true', help='Render the simulator')
     parser.add_argument('--episodes', default=10, type=int, help='Number of test episodes')
+    parser.add_argument("--randomize-on-reset", action="store_true")
+    parser.add_argument("--use-ext", action="store_true")
 
     return parser.parse_args()
 
@@ -23,8 +25,11 @@ args = parse_args()
 
 def main():
 
-    #env = gym.make('CustomHopper-source-v0')
-    env = gym.make('CustomHopper-target-v0')
+    env = gym.make(
+        "CustomHopper-target-v0",
+        use_ext=args.use_ext,
+        randomize_on_reset=args.randomize_on_reset
+    )
 
 
     print('Action space:', env.action_space)
