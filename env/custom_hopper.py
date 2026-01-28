@@ -9,19 +9,18 @@ import numpy as np
 import gym
 from gym import utils
 from .mujoco_env import MujocoEnv
-from Sac.curriculum import FailureGMMCurriculum
 from Sac.adversarial_beta import AdversarialBeta
 
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
     def __init__(self, domain=None, use_ext=False, curriculum_seed=42):
         
+        self.randomize_on_reset = None
         self.use_ext = use_ext
         self.curriculum_seed = curriculum_seed # Seed for AdvBeta
         self.current_active_params = None
         self.cumulative_reward = 0
         self.episode_count = 0
-        
         self.curriculum = None
 
         MujocoEnv.__init__(self, 4)

@@ -107,7 +107,161 @@ The following flag combinations are used:
 > **Note:** The combination `use_ext=true` and `randomize_on_reset=false` is intentionally avoided, as the curriculum would never be applied.
 
 ---
+## Environment Configuration
+Before running any scripts, you must set the required environment variables for MuJoCo and Python buffering.
 
 ## Installation Check
-
 After installing all dependencies and MuJoCo (see sections above), verify the setup by running:
+```bash
+python test_random_policy.py
+```
+If the script runs correctly, the environment is properly installed.
+
+---
+
+## Actor–Critic and REINFORCE
+
+### Training (Single Run)
+
+**Train an Actor–Critic agent on the source domain:**
+```bash
+python ActorCritic/train_actor_critic.py \
+  --env-id CustomHopper-source-v0 \
+  --n-episodes 50000 \
+  --actor-critic \
+  --baseline 20.0 \
+  --seed 42 \
+  --device cuda
+```
+**Train a REINFORCE agent without baseline:**
+```bash
+python ActorCritic/train_actor_critic.py \
+  --env-id CustomHopper-source-v0 \
+  --n-episodes 50000 \
+  --baseline 0.0 \
+  --seed 42 \
+  --device cuda
+
+```
+
+### Training with Weights & Biases Sweep
+Log in to Weights & Biases:
+```bash
+wandb login
+```
+Launch the sweep:
+```bash
+python sweep_runner_ac.py
+```
+The sweep evaluates different combinations of:
+* Random seeds (e.g., 42, 43, 44)
+* Actor–Critic vs REINFORCE
+* Baseline values
+
+### Evaluation (Actor–Critic / REINFORCE)
+Evaluate a trained model:
+```bash
+python test_actor_critic.py \
+  --model AC_Seed42.mdl \
+  --episodes 10 \
+  --device cpu
+```
+The evaluation can be performed on either the source or target domain depending on the environment selected in the test script.
+
+---
+
+## Soft Actor-Critic (SAC)
+
+### Training (Single Run)
+Train SAC on the source domain:
+```bash
+python Sac/train_sac.py \
+  --env-id CustomHopper-source-v0 \
+  --seed 42
+```
+
+In this project, domain randomization and curriculum behavior are controlled internally through configuration flags passed to the environment.
+
+### Training with Weights & Biases Sweep (Recommended)
+Launch the SAC sweep:
+```bash
+python sweep_runner_sac.py
+```
+
+The sweep explores:
+* Multiple random seeds (e.g., 42, 43, 44)
+* No-DR, UDR, and AdvBeta configurations
+* Fixed SAC hyperparameters for fair comparison
+
+### SAC Evaluation (Source → Source and Source → Target)
+Evaluate a trained SAC policy:
+```bash
+python test_sac.py \
+  --model sac_final_seed42_id_SAC_seed42_UDR \
+  --episodes 10 \
+  --device cpu
+```
+#### Optional Evaluation Flags
+
+| Flag | Description |
+| :--- | :--- |
+| `--randomize-on-reset` | Enable domain randomization during evaluation |
+| `--use-ext` | Enable Adversarial Beta sampling |
+| `--seed <int>` | Fix environment randomness |
+| `--render` | Render the simulator |
+
+#### Examples
+
+**Evaluate on target domain with No Domain Randomization:**
+```bash
+python test_sac.py \
+  --model sac_final_seed42_id_SAC_seed42_NoDR \
+  --episodes 10 \
+  --device cpu
+```
+
+**Evaluate on target domain with Uniform Domain Randomization:**
+```bash
+python test_sac.py \
+  --model sac_final_seed42_id_SAC_seed42_UDR \
+  --episodes 10 \
+  --device cpu \
+  --randomize-on-reset \
+  --seed 42
+```
+
+**Evaluate on target domain with Adversarial Beta Curriculum:**
+```bash
+python test_sac.py \
+  --model sac_final_seed42_id_SAC_seed42_AdvBeta \
+  --episodes 10 \
+  --device cpu \
+  --randomize-on-reset \
+  --use-ext \
+  --seed 42
+```
+
+---
+
+## Logging and Monitoring
+
+All experiments are logged using **Weights & Biases** and **TensorBoard**.
+
+Logged metrics include:
+* Episode return and episode length
+* Sampled environment parameters
+* Curriculum statistics (alphas and betas)
+
+For Adversarial Beta experiments, the evolution of the sampling distribution is saved as a PDF file (`evolution_<run_name>.pdf`) to enable qualitative analysis of the curriculum behavior.
+
+---
+
+## Experimental Protocol and Reproducibility
+
+To ensure fair and reproducible comparisons:
+1.  **Identical random seeds** are used across all strategies.
+2.  **Hyperparameters** are kept fixed across methods.
+3.  **Training** is always performed on the source domain.
+4.  **Evaluation** is performed on both source and target domains.
+
+Performance is analyzed in terms of average return, variability across episodes, and robustness under domain shift.
