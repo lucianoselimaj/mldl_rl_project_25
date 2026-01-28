@@ -7,13 +7,13 @@ def sweep_train():
     with open(SWEEP_CONFIG_PATH) as f:
         sweep_config = yaml.safe_load(f)
 
-    sweep_id = wandb.sweep(sweep=sweep_config, project="sac-hopper")
+    sweep_id = wandb.sweep(sweep=sweep_config, project="sac-hopper-plot")
 
     def run_sweep():
-        run = wandb.init(project="sac-hopper", sync_tensorboard=True)
+        run = wandb.init(project="sac-hopper-plot", sync_tensorboard=True)
         cfg = wandb.config
 
-        run.name = f"SAC_seed{cfg.seed}_basic"
+        run.name = f"SAC_seed{cfg.seed}_beta"
 
         train_sac(config=dict(cfg), run_name=run.name)
         wandb.finish()
