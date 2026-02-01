@@ -9,7 +9,7 @@ from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import BaseCallback, CallbackList
 from wandb.integration.sb3 import WandbCallback
 
-from utils.utils import plot_distribution
+from utils.utils import plot_distribution, to_bool
 
 class PerEpisodeWandbCallback(BaseCallback):
     def __init__(self):
@@ -44,9 +44,9 @@ def train_sac(config, run_name):
     train_env = Monitor(
         gym.make(
             config["env_id"],
-            use_ext=bool(config.get("use_ext", False)),
+            use_ext=to_bool(config.get("use_ext", False)),
             curriculum_seed=int(config["seed"]),
-            randomize_on_reset=bool(config.get("randomize_on_reset", True)),
+            randomize_on_reset=to_bool(config.get("randomize_on_reset", False)),
         )
     )
 

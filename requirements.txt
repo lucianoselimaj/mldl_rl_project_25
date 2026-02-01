@@ -9,3 +9,6 @@ patchelf
 wandb
 scikit-learn
 matplotlib
+torch
+numpy
+pyyaml

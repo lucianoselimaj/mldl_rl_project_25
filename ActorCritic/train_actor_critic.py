@@ -5,6 +5,7 @@ import torch
 import wandb
 import numpy as np
 import gym
+from utils.utils import to_bool
 
 
 
@@ -35,7 +36,7 @@ def train_actor_critic(config=None, run_name=None):
     env_id = getattr(cfg, "env_id", "CustomHopper-source-v0")
     env = gym.make(
         env_id,
-        randomize_on_reset=bool(getattr(cfg, "randomize_on_reset", True))
+        randomize_on_reset=to_bool(getattr(cfg, "randomize_on_reset", False))
     )
 
     print('Action space:', env.action_space)
@@ -104,7 +105,8 @@ if __name__ == "__main__":
     parser.add_argument("--device", default="cuda", type=str)
     parser.add_argument("--actor-critic", action="store_true")
     parser.add_argument("--baseline", default=0.0, type=float)
-    parser.add_argument("--seed", default=0, type=int)   # ✅ ADDED
+    parser.add_argument("--seed", default=0, type=int)
+    parser.add_argument("--randomize_on_reset", action="store_true", default=False)
 
     args = parser.parse_args()
     train_actor_critic(config=vars(args), run_name="manual_run")

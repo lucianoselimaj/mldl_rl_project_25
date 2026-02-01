@@ -6,6 +6,23 @@ import numpy as np
 import os
 from scipy.stats import beta
 
+
+def to_bool(x):
+    """
+    Safe boolean conversion:
+    - True/False stays True/False
+    - "true"/"false" strings are correctly parsed
+    - numeric values (0/1) are handled
+    """
+    if isinstance(x, bool):
+        return x
+    if isinstance(x, (int, float, np.integer, np.floating)):
+        return bool(x)
+    if isinstance(x, str):
+        return x.strip().lower() in ("1", "true", "t", "yes", "y")
+    return bool(x)
+
+
 def plot_distribution(adv_beta, save_path="advbeta_evolution.pdf"):
     history = adv_beta.history
     episodes = np.array(history['episode'])

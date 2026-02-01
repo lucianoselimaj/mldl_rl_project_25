@@ -172,9 +172,6 @@ class Agent(object):
 
         self.states.append(torch.from_numpy(state).float())
 
-        #if done:
-            #next_state = torch.zeros_like(torch.from_numpy(state).float()) 
-        #else:
         next_state = torch.from_numpy(next_state).float()
         self.next_states.append(next_state)
 

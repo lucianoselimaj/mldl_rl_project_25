@@ -6,7 +6,7 @@ parameters:
   env_id:
     value: "CustomHopper-source-v0"
   randomize_on_reset:
-    values: [ true, false ]
+    values: [true, false]
 
   n_episodes:
     value: 50000

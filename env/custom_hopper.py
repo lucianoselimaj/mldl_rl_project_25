@@ -10,12 +10,12 @@ import gym
 from gym import utils
 from .mujoco_env import MujocoEnv
 from Sac.adversarial_beta import AdversarialBeta
-
+from utils.utils import to_bool
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
-    def __init__(self, domain=None, use_ext=False, curriculum_seed=42):
+    def __init__(self, domain=None, use_ext=False, curriculum_seed=42, randomize_on_reset=False):
         
-        self.randomize_on_reset = None
+        self.randomize_on_reset = to_bool(randomize_on_reset)
         self.use_ext = use_ext
         self.curriculum_seed = curriculum_seed # Seed for AdvBeta
         self.current_active_params = None

@@ -1,7 +1,7 @@
 import wandb, yaml
 from train_sac import train_sac
 
-SWEEP_CONFIG_PATH = "Sac/sweep_config_sac.yaml"
+SWEEP_CONFIG_PATH = "sweep_config_sac.yaml"
 
 def sweep_train():
     with open(SWEEP_CONFIG_PATH) as f:
