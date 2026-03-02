@@ -13,10 +13,10 @@ from Sac.adversarial_beta import AdversarialBeta
 from utils.utils import to_bool
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
-    def __init__(self, domain=None, use_ext=False, curriculum_seed=42, randomize_on_reset=False):
+    def __init__(self, domain=None, use_beta=False, curriculum_seed=42, randomize_on_reset=False):
         
         self.randomize_on_reset = to_bool(randomize_on_reset)
-        self.use_ext = use_ext
+        self.use_beta = use_beta
         self.curriculum_seed = curriculum_seed # Seed for AdvBeta
         self.current_active_params = None
         self.cumulative_reward = 0
@@ -33,7 +33,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         if domain == 'source':  # Source environment has an imprecise torso mass (-30% shift)
             self.sim.model.body_mass[1] *= 0.7
         
-        if self.use_ext:
+        if self.use_beta:
             # Beta initialization
             active_masses = self.original_masses[1:] 
             self.curriculum = AdversarialBeta(
@@ -52,7 +52,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         
     def set_random_parameters(self):
         """Set random masses"""
-        self.set_parameters(self.sample_parameters(ext=self.use_ext))
+        self.set_parameters(self.sample_parameters(ext=self.use_beta))
 
 
     def sample_parameters(self, ext=False):
@@ -138,7 +138,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
     
         if done:
             # Map current_active_params to cumulative_reward
-            if self.use_ext and (self.curriculum is not None):
+            if self.use_beta and (self.curriculum is not None):
                 if self.current_active_params is not None:
                     self.curriculum.add_experience(self.current_active_params, self.cumulative_reward)
                     self.episode_count += 1
