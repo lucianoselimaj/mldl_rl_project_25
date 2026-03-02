@@ -1,7 +1,8 @@
 import os
+import argparse
+import yaml
 import torch
 import wandb
-import random
 
 from env.custom_hopper import *
 from stable_baselines3 import SAC
@@ -9,7 +10,7 @@ from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import BaseCallback, CallbackList
 from wandb.integration.sb3 import WandbCallback
 
-from utils.utils import plot_distribution, to_bool
+from utils.utils import plot_distribution
 
 class PerEpisodeWandbCallback(BaseCallback):
     def __init__(self):
@@ -40,13 +41,16 @@ class PerEpisodeWandbCallback(BaseCallback):
 
 
 def train_sac(config, run_name):
+    dr_method = config.get("dr_method", "none")
+    use_beta = dr_method == "adv_beta"
+    randomize_on_reset = dr_method in ("udr", "adv_beta")
 
     train_env = Monitor(
         gym.make(
             config["env_id"],
-            use_ext=to_bool(config.get("use_ext", False)),
+            use_beta=use_beta,
             curriculum_seed=int(config["seed"]),
-            randomize_on_reset=to_bool(config.get("randomize_on_reset", False)),
+            randomize_on_reset=randomize_on_reset,
         )
     )
 
@@ -90,14 +94,39 @@ def train_sac(config, run_name):
         tb_log_name=run_name,  # makes tb_logs folder clearer
     )
 
-    save_dir = os.path.join("saved_models")
+    save_dir = os.path.join(os.path.dirname(__file__), "saved_models")
     os.makedirs(save_dir, exist_ok=True)
     model.save(os.path.join(save_dir, f"sac_final_seed{config['seed']}_id_{run_name}"))
 
     # Plot beta distribution in a pdf file
-    use_ext = getattr(train_env.unwrapped, "use_ext", False)
-    if use_ext:
+    if use_beta:
         adv_beta = train_env.unwrapped.curriculum
-        plot_distribution(adv_beta, save_path=f"evolution_{run_name}.pdf")
+        plot_distribution(adv_beta, save_path=f"evolution_{run_name}.pdf",
+                          param_names=["Thigh", "Leg", "Foot"])
 
     train_env.close()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--env-id", default="CustomHopper-source-v0", type=str)
+    parser.add_argument("--dr-method", default="none", choices=["none", "udr", "adv_beta"])
+    parser.add_argument("--seed", default=0, type=int)
+    parser.add_argument("--device", default="auto", type=str)
+    args = parser.parse_args()
+
+    with open(os.path.join(os.path.dirname(__file__), "sweep_config_sac.yaml")) as f:
+        sweep_cfg = yaml.safe_load(f)
+    config = {k: v["value"] for k, v in sweep_cfg["parameters"].items() if "value" in v}
+
+    config.update({
+        "env_id": args.env_id,
+        "dr_method": args.dr_method,
+        "seed": args.seed,
+        "device": args.device,
+    })
+
+    run_name = f"SAC_seed{args.seed}_{args.dr_method}"
+    wandb.init(project="sac-hopper", config=config, name=run_name, sync_tensorboard=True)
+    train_sac(config=config, run_name=run_name)
+    wandb.finish()
