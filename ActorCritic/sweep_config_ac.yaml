@@ -5,8 +5,8 @@ metric:
 parameters:
   env_id:
     value: "CustomHopper-source-v0"
-  randomize_on_reset:
-    values: [true, false]
+  dr_method:
+    values: ["none", "udr"]
 
   n_episodes:
     value: 50000
