@@ -7,7 +7,7 @@ import numpy as np
 import gym
 
 from env.custom_hopper import *   # registers envs
-from agent import Agent, Policy
+from ActorCritic.agent import Agent, Policy
 
 
 def set_seed(seed: int):

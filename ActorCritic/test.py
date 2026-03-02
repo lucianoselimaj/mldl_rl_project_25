@@ -7,7 +7,7 @@ import gym
 import os
 
 from env.custom_hopper import *
-from agent import Agent, Policy
+from ActorCritic.agent import Agent, Policy
 
 
 def parse_args():
