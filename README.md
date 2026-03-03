@@ -1,5 +1,4 @@
 # Project on Reinforcement Learning (Course project MLDL 2025 - POLITO)
-### Teaching assistants: Andrea Protopapa and Davide Buoso
 
 Implementation of "Project 4: Reinforcement Learning" for the Machine Learning and Deep Learning (MLDL) 2025 course at Polytechnic of Turin. Official assignment at [Google Doc](https://docs.google.com/document/d/16Fy0gUj-HKxweQaJf97b_lTeqM_9axJa4_SdqpP_FaE/edit?usp=sharing).
 
@@ -192,7 +191,7 @@ python Sac/train_sac.py \
   --dr-method udr
 ```
 
-The `--dr-method` flag accepts `none`, `udr`, or `adv_beta`. Hyperparameters are loaded from `Sac/sweep_config_sac.yaml`.
+The `--dr-method` flag accepts `none`, `udr`, or `adv_beta`. SAC hyperparameters are loaded from `Sac/sweep_config_sac.yaml`. When using `adv_beta`, the curriculum hyperparameters, such as buffer size, warmup episodes, tau, etc., are loaded from `Sac/adv_beta_config.yaml`.
 
 ### Training with Weights & Biases Sweep (Recommended)
 Launch the SAC sweep:
