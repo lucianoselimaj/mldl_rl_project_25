@@ -52,14 +52,15 @@ def plot_distribution(adv_beta, save_path="advbeta_evolution.pdf", param_names=N
 
     for dim in range(n_dims):
         ax = axes[dim]
-        x_phys = adv_beta.lower[dim] + x * (adv_beta.upper[dim] - adv_beta.lower[dim])
+        range_dim = adv_beta.upper[dim] - adv_beta.lower[dim]
+        x_phys = adv_beta.lower[dim] + x * range_dim
 
-        ax.plot(x_phys, np.ones_like(x), 'k--', alpha=0.5, label='Uniform (Start)')
+        ax.plot(x_phys, np.ones_like(x) / range_dim, 'k--', alpha=0.5, label='Uniform (Start)')
 
         for idx, t in enumerate(times):
             actual_idx = np.argmin(np.abs(episodes - t))
             ep = episodes[actual_idx]
-            y = beta.pdf(x, alphas[actual_idx, dim], betas[actual_idx, dim])
+            y = beta.pdf(x, alphas[actual_idx, dim], betas[actual_idx, dim]) / range_dim
 
             if idx == 0:
                 label = f"Start (Ep {ep})"
@@ -75,7 +76,7 @@ def plot_distribution(adv_beta, save_path="advbeta_evolution.pdf", param_names=N
 
         dim_label = param_names[dim] if param_names and dim < len(param_names) else f"Dim {dim}"
         ax.set_title(f"Evolution of {dim_label} mass")
-        ax.set_xlabel("kg")
+        ax.set_xlabel("Mass(kg)")
         ax.set_ylabel("Probability density")
         ax.legend()
         ax.grid(True, alpha=0.3)
