@@ -1,8 +1,8 @@
-buffer_size: 300          # FIFO buffer size (optimize for ~3000 total episodes)
-warmup_episodes: 750      # Episodes before curriculum starts (account for SAC warmup)
-limit_percentage: 0.3     # Mass randomization range: +/- 30% of nominal
-mix_ratio: 0.5            # Fraction of episodes sampled from beta (vs uniform)
-tau: 0.1                  # Soft update rate for alpha/beta parameters
-max_alpha_beta: 80.0      # Upper bound on alpha/beta to avoid overfitting
-failure_percentile: 20    # Bottom % of rewards treated as failures
+buffer_size: 300          # Buffer size (optimized for approximately 3000 eps in total)
+warmup_episodes: 750      # Episodes before Adv beta starts (when you set this value consider the Sac warmup phase and the buffer_size)
+limit_percentage: 0.3     # Mass randomization range (+/- 30%)
+mix_ratio: 0.5            # Mix ratio (50% Uniform, 50% Adv beta)
+tau: 0.1                  # Soft update rate
+max_alpha_beta: 80.0      # Clipping to avoid overfitting
+failure_percentile: 20    # Threshold of rewards under which are considered failures
 fit_interval: 30          # Episodes between each beta distribution update
