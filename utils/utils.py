@@ -23,36 +23,44 @@ def to_bool(x):
     return bool(x)
 
 
-def plot_distribution(adv_beta, save_path="advbeta_evolution.pdf"):
+def plot_distribution(adv_beta, save_path="advbeta_evolution.pdf", param_names=None):
     history = adv_beta.history
     episodes = np.array(history['episode'])
-    if len(episodes) == 0: return 
+    if len(episodes) == 0: return
 
-    alphas = np.array(history['alphas'])[:, 0]
-    betas = np.array(history['betas'])[:, 0]
-    
+    alphas = np.array(history['alphas']) 
+    betas  = np.array(history['betas'])   
+    n_dims = alphas.shape[1]
+
     timestamps = [0, int(episodes[-1]*0.2), int(episodes[-1]*0.5), episodes[-1]]
-    
-    fig, ax = plt.subplots(figsize=(8, 5))
+    colors = cm.viridis(np.linspace(0.3, 0.9, len(timestamps)))
+
+    fig, axes = plt.subplots(1, n_dims, figsize=(6*n_dims, 5))
+    if n_dims == 1:
+        axes = [axes]
+
     x = np.linspace(0, 1, 500)
 
-    x_phys = adv_beta.lower[0] + x * (adv_beta.upper[0] - adv_beta.lower[0])
-    
-    colors = cm.viridis(np.linspace(0.3, 0.9, len(timestamps)))
-    
-    # Baseline
-    ax.plot(x_phys, np.ones_like(x), 'k--', alpha=0.5, label='Uniform Baseline')
+    for dim in range(n_dims):
+        ax = axes[dim]
+        x_phys = adv_beta.lower[dim] + x * (adv_beta.upper[dim] - adv_beta.lower[dim])
 
-    for idx, t in enumerate(timestamps):
-        actual_idx = np.argmin(np.abs(episodes - t))
-        y = beta.pdf(x, alphas[actual_idx], betas[actual_idx])
-        label = "Init" if episodes[actual_idx] == 0 else f"Ep {episodes[actual_idx]}"
-        ax.plot(x_phys, y, color=colors[idx], linewidth=2, label=label)
-        if idx == len(timestamps)-1: ax.fill_between(x_phys, y, color=colors[idx], alpha=0.1)
+        ax.plot(x_phys, np.ones_like(x), 'k--', alpha=0.5, label='Uniform Baseline')
 
-    ax.set_title("Evolution of sampling distribution")
-    ax.set_xlabel("Physical parameter value")
-    ax.legend()
+        for idx, t in enumerate(timestamps):
+            actual_idx = np.argmin(np.abs(episodes - t))
+            y = beta.pdf(x, alphas[actual_idx, dim], betas[actual_idx, dim])
+            label = "Init" if episodes[actual_idx] == 0 else f"Ep {episodes[actual_idx]}"
+            ax.plot(x_phys, y, color=colors[idx], linewidth=2, label=label)
+            if idx == len(timestamps)-1:
+                ax.fill_between(x_phys, y, color=colors[idx], alpha=0.1)
+
+        dim_label = param_names[dim] if param_names and dim < len(param_names) else f"Dim {dim}"
+        ax.set_title(f"Evolution of sampling distribution\n({dim_label})")
+        ax.set_xlabel("Kg")
+        ax.set_ylabel("Probability density")
+        ax.legend()
+
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
