@@ -40,17 +40,19 @@ class PerEpisodeWandbCallback(BaseCallback):
         return True
 
 
-def train_sac(config, run_name):
+def train_sac(config, run_name, beta_config=None):
     dr_method = config.get("dr_method", "none")
     use_beta = dr_method == "adv_beta"
     randomize_on_reset = dr_method in ("udr", "adv_beta")
 
+    beta_config = beta_config or {}
     train_env = Monitor(
         gym.make(
             config["env_id"],
             use_beta=use_beta,
             curriculum_seed=int(config["seed"]),
             randomize_on_reset=randomize_on_reset,
+            **({k: beta_config[k] for k in beta_config} if use_beta else {}),
         )
     )
 
@@ -126,7 +128,12 @@ if __name__ == "__main__":
         "device": args.device,
     })
 
+    beta_config = {}
+    if args.dr_method == "adv_beta":
+        with open(os.path.join(os.path.dirname(__file__), "adv_beta_config.yaml")) as f:
+            beta_config = yaml.safe_load(f)
+
     run_name = f"SAC_seed{args.seed}_{args.dr_method}"
-    wandb.init(project="sac-hopper", config=config, name=run_name, sync_tensorboard=True)
-    train_sac(config=config, run_name=run_name)
+    wandb.init(project="sac-hopper", config={**config, **beta_config}, name=run_name, sync_tensorboard=True)
+    train_sac(config=config, run_name=run_name, beta_config=beta_config)
     wandb.finish()

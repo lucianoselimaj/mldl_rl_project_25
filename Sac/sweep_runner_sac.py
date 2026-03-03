@@ -3,6 +3,7 @@ import wandb, yaml
 from train_sac import train_sac
 
 SWEEP_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "sweep_config_sac.yaml")
+BETA_CONFIG_PATH  = os.path.join(os.path.dirname(__file__), "adv_beta_config.yaml")
 
 def sweep_train():
     with open(SWEEP_CONFIG_PATH) as f:
@@ -16,7 +17,13 @@ def sweep_train():
 
         run.name = f"SAC_seed{cfg.seed}_{cfg.dr_method}"
 
-        train_sac(config=dict(cfg), run_name=run.name)
+        beta_config = {}
+        if cfg.dr_method == "adv_beta":
+            with open(BETA_CONFIG_PATH) as f:
+                beta_config = yaml.safe_load(f)
+            run.config.update(beta_config, allow_val_change=True)
+
+        train_sac(config=dict(cfg), run_name=run.name, beta_config=beta_config)
         wandb.finish()
 
     wandb.agent(sweep_id, function=run_sweep)
