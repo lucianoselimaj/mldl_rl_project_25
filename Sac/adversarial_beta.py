@@ -1,13 +1,14 @@
 import numpy as np
 
 class AdversarialBeta:
-    def __init__(self, nominal_masses, 
+    def __init__(self, nominal_masses,
                  limit_percentage=0.3,   # +/- 30%
                  buffer_size=300,        # Optimized for approximately 3000 ep in total
                  warmup_episodes=750,    # When you set this value consider the Sac warmup phase and the buffer_size
-                 mix_ratio=0.5,          # 50% Uniform, 50% Adv beta 
+                 mix_ratio=0.5,          # 50% Uniform, 50% Adv beta
                  tau=0.1,                # Soft update rate
-                 max_alpha_beta=80.0,    # Clipping to avoid overfitting 
+                 max_alpha_beta=80.0,    # Clipping to avoid overfitting
+                 failure_percentile=20,  # Bottom % of rewards considered failures
                  seed=42):
         
         self.rng = np.random.default_rng(seed)
@@ -34,7 +35,7 @@ class AdversarialBeta:
         self.mix_ratio = mix_ratio
         self.tau = tau
         self.max_param_val = max_alpha_beta
-        self.failure_percentile = 20 # Percentile of failures
+        self.failure_percentile = failure_percentile
         self.warmup_episodes = warmup_episodes
 
         self.episode_count = 0

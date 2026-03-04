@@ -1,6 +1,7 @@
 """Test SAC's sb3 models on the OpenAI Gym Hopper environment"""
 import argparse
 
+import numpy as np
 import torch
 import gym
 import os
@@ -15,9 +16,7 @@ def parse_args():
     parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
     parser.add_argument('--render', default=False, action='store_true', help='Render the simulator')
     parser.add_argument('--episodes', default=10, type=int, help='Number of test episodes')
-    parser.add_argument("--randomize-on-reset", action="store_true")
-    parser.add_argument("--use-ext", action="store_true")
-
+    parser.add_argument('--env-id', default='CustomHopper-target-v0', type=str, help='Environment id')
     return parser.parse_args()
 
 args = parse_args()
@@ -25,11 +24,7 @@ args = parse_args()
 
 def main():
 
-    env = gym.make(
-        "CustomHopper-target-v0",
-        use_ext=args.use_ext,
-        randomize_on_reset=args.randomize_on_reset
-    )
+    env = gym.make(args.env_id)
 
 
     print('Action space:', env.action_space)

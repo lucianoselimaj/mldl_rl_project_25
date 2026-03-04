@@ -1,12 +1,13 @@
 """Test an RL agent on the OpenAI Gym Hopper environment"""
 import argparse
 
+import numpy as np
 import torch
 import gym
-import os  # Added for directory handling
+import os
 
 from env.custom_hopper import *
-from agent import Agent, Policy
+from ActorCritic.agent import Agent, Policy
 
 
 def parse_args():
@@ -15,8 +16,7 @@ def parse_args():
     parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
     parser.add_argument('--render', default=False, action='store_true', help='Render the simulator')
     parser.add_argument('--episodes', default=10, type=int, help='Number of test episodes')
-    parser.add_argument("--randomize-on-reset",default=False, action="store_true", help="Enable domain randomization at reset()")
-
+    parser.add_argument('--env-id', default='CustomHopper-target-v0', type=str, help='Environment id')
     return parser.parse_args()
 
 
@@ -25,10 +25,7 @@ args = parse_args()
 
 def main():
 
-    env = gym.make(
-        'CustomHopper-source-v0',
-        randomize_on_reset=args.randomize_on_reset
-    )
+    env = gym.make(args.env_id)
 
     print('Action space:', env.action_space)
     print('State space:', env.observation_space)
@@ -42,7 +39,7 @@ def main():
     # Load from ActorCritic/saved_models
     # Assumes args.model is just the filename (e.g., "sweep_run.mdl")
     model_path = os.path.join("ActorCritic", "saved_models", args.model)
-    policy.load_state_dict(torch.load(model_path), strict=True)
+    policy.load_state_dict(torch.load(model_path, map_location=args.device), strict=True)
 
     agent = Agent(policy, device=args.device)
     all_rewards = []

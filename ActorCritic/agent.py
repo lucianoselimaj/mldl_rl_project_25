@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
-#from matplotlib.tests.test_backend_pgf import baseline_dir
 from torch.distributions import Normal
 
 
@@ -34,7 +33,7 @@ class Policy(torch.nn.Module):
             torch.nn.Linear(self.hidden, action_space) 
         )
         
-        # Learned standard deviation for exploration at training time 
+        # Standard deviation for exploration at training time 
         self.sigma_activation = F.softplus
         init_sigma = 0.5
         self.sigma = torch.nn.Parameter(torch.zeros(self.action_space)+init_sigma)

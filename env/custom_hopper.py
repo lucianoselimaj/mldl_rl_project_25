@@ -13,11 +13,15 @@ from Sac.adversarial_beta import AdversarialBeta
 from utils.utils import to_bool
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
-    def __init__(self, domain=None, use_ext=False, curriculum_seed=42, randomize_on_reset=False):
+    def __init__(self, domain=None, use_beta=False, curriculum_seed=42, randomize_on_reset=False,
+                 buffer_size=300, warmup_episodes=750, limit_percentage=0.3,
+                 mix_ratio=0.5, tau=0.1, max_alpha_beta=80.0, failure_percentile=20,
+                 fit_interval=30):
         
         self.randomize_on_reset = to_bool(randomize_on_reset)
-        self.use_ext = use_ext
+        self.use_beta = use_beta
         self.curriculum_seed = curriculum_seed # Seed for AdvBeta
+        self.fit_interval = fit_interval
         self.current_active_params = None
         self.cumulative_reward = 0
         self.episode_count = 0
@@ -33,18 +37,18 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         if domain == 'source':  # Source environment has an imprecise torso mass (-30% shift)
             self.sim.model.body_mass[1] *= 0.7
         
-        if self.use_ext:
-            # Beta initialization
-            active_masses = self.original_masses[1:] 
+        if self.use_beta:
+            active_masses = self.original_masses[1:]
             self.curriculum = AdversarialBeta(
                 nominal_masses=active_masses,
-                buffer_size=300,
-                warmup_episodes=750,
-                limit_percentage=0.3, # +/- 30%
-                mix_ratio=0.5,          # 50% uniform / 50% curriculum
-                tau=0.1,                # Soft update rate
-                max_alpha_beta=80.0,    # Upper bound on alpha and beta values
-                seed=self.curriculum_seed,        
+                buffer_size=buffer_size,
+                warmup_episodes=warmup_episodes,
+                limit_percentage=limit_percentage,
+                mix_ratio=mix_ratio,
+                tau=tau,
+                max_alpha_beta=max_alpha_beta,
+                failure_percentile=failure_percentile,
+                seed=self.curriculum_seed,
             )
         else:
             self.curriculum = None
@@ -52,7 +56,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         
     def set_random_parameters(self):
         """Set random masses"""
-        self.set_parameters(self.sample_parameters(ext=self.use_ext))
+        self.set_parameters(self.sample_parameters(ext=self.use_beta))
 
 
     def sample_parameters(self, ext=False):
@@ -138,13 +142,12 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
     
         if done:
             # Map current_active_params to cumulative_reward
-            if self.use_ext and (self.curriculum is not None):
+            if self.use_beta and (self.curriculum is not None):
                 if self.current_active_params is not None:
                     self.curriculum.add_experience(self.current_active_params, self.cumulative_reward)
                     self.episode_count += 1
                     
-                    # Every 30 episodes update strategy
-                    if self.episode_count % 30 == 0:
+                    if self.episode_count % self.fit_interval == 0:
                         update = self.curriculum.fit_model()
                         if update:
                             print("Adverarial Betas updated")

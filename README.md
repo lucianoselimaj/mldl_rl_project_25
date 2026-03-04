@@ -1,20 +1,13 @@
 # Project on Reinforcement Learning (Course project MLDL 2025 - POLITO)
-### Teaching assistants: Andrea Protopapa and Davide Buoso
 
-Starting code for "Project 4: Reinforcement Learning" course project of MLDL 2025 at Polytechnic of Turin. Official assignment at [Google Doc](https://docs.google.com/document/d/16Fy0gUj-HKxweQaJf97b_lTeqM_9axJa4_SdqpP_FaE/edit?usp=sharing).
+Implementation of "Project 4: Reinforcement Learning" for the Machine Learning and Deep Learning (MLDL) 2025 course at Polytechnic of Turin. Official assignment at [Google Doc](https://docs.google.com/document/d/16Fy0gUj-HKxweQaJf97b_lTeqM_9axJa4_SdqpP_FaE/edit?usp=sharing).
 
 
 ## Getting started
 
-Before starting to implement your own code, make sure to:
-1. read and study the material provided (see Section 1 in the assignment)
-2. read the documentation of the main packages you will be using ([mujoco-py](https://github.com/openai/mujoco-py), [Gym](https://github.com/openai/gym), [stable-baselines3](https://stable-baselines3.readthedocs.io/en/master/index.html))
-3. play around with the code in the template to familiarize with all the tools. Especially with the `test_random_policy.py` script.
-
-
 ### 1. Local on Linux (recommended)
 
-if you have a Linux system, you can work on the course project directly on your local machine. By doing so, you will also be able to render the Mujoco Hopper environment and visualize what is happening. This code has been tested on Linux with python 3.7.
+If you have a Linux system, you can work on the course project directly on your local machine. By doing so, you will also be able to render the Mujoco Hopper environment and visualize what is happening. This code has been tested on Linux with python 3.7.
 
 **Installation**
 - (recommended) create a new conda environment, e.g. `conda create --name mldl pip=22 python=3.8 setuptools=65.5.0 wheel=0.38`
@@ -37,8 +30,8 @@ As the latest version of `mujoco-py` is not compatible for Windows explicitly, y
 
 Alternatively, you may also complete the project on [Google Colab](https://colab.research.google.com/):
 
-- Download the files contained in the `colab_template` folder in this repo.
-- Load the `.ipynb` files on [https://colab.research.google.com/](colab) and follow the instructions on each script to run the experiments.
+- Download `colab_starting_code.ipynb` from the root of this repo.
+- Load it on [Google Colab](https://colab.research.google.com/) and follow the instructions in the notebook to run the experiments.
 
 NOTE 1: rendering is currently **not** officially supported on Colab, making it hard to see the simulator in action. We recommend that each group manages to play around with the visual interface of the simulator at least once (e.g. using a Linux system), to best understand what is going on with the underlying Hopper environment.
 
@@ -50,9 +43,9 @@ NOTE 2: you need to stay connected to the Google Colab interface at all times fo
 - General installation guide and troubleshooting: [Here](https://docs.google.com/document/d/1j5_FzsOpGflBYgNwW9ez5dh3BGcLUj4a/edit?usp=sharing&ouid=118210130204683507526&rtpof=true&sd=true)
 - If having trouble while installing mujoco-py, see [#627](https://github.com/openai/mujoco-py/issues/627) to install all dependencies through conda.
 - If installation goes wrong due to gym==0.21 as `error in gym setup command: 'extras_require'`, see https://github.com/openai/gym/issues/3176. There is a problem with the version of setuptools.
-- if you get a `cannot find -lGL` error when importing mujoco_py for the first time, then have a look at my solution in [#763](https://github.com/openai/mujoco-py/issues/763#issuecomment-1519090452)
-- if you get a `fatal error: GL/osmesa.h: No such file or directory` error, make sure you export the CPATH variable as mentioned in mujoco-py[#627](https://github.com/openai/mujoco-py/issues/627)
-- if you get a `Cannot assign type 'void (const char *) except * nogil' to 'void`, then run `pip install "cython<3"` (see issue [#773](https://github.com/openai/mujoco-py/issues/773))
+- If you get a `cannot find -lGL` error when importing mujoco_py for the first time, then have a look at my solution in [#763](https://github.com/openai/mujoco-py/issues/763#issuecomment-1519090452)
+- If you get a `fatal error: GL/osmesa.h: No such file or directory` error, make sure you export the CPATH variable as mentioned in mujoco-py[#627](https://github.com/openai/mujoco-py/issues/627)
+- If you get a `Cannot assign type 'void (const char *) except * nogil' to 'void`, then run `pip install "cython<3"` (see issue [#773](https://github.com/openai/mujoco-py/issues/773))
 
 ---
 
@@ -77,9 +70,10 @@ A custom version of the MuJoCo Hopper environment is implemented to explicitly m
 - The **source domain** introduces a controlled modeling bias by modifying the torso mass.
 - The **target domain** represents the nominal physical parameters and is used for transfer evaluation.
 
-The environment behavior is controlled dynamically at runtime using two flags:
-- `randomize_on_reset`: enables mass randomization at each episode reset.
-- `use_ext`: enables curriculum-based sampling using the Adversarial Beta method.
+The training behavior is controlled via a single `dr_method` parameter:
+- `none`: fixed physical parameters (No-DR)
+- `udr`: uniform mass randomization at each episode reset
+- `adv_beta`: curriculum-based sampling using the Adversarial Beta method (SAC only)
 
 ---
 
@@ -96,19 +90,26 @@ Thigh, leg, and foot masses are sampled uniformly within **±30%** of their nomi
 ### 3. Adversarial Beta Curriculum (AdvBeta)
 A curriculum is learned online by fitting Beta distributions over parameters that lead to low returns. Sampling is performed by mixing uniform exploration with curriculum-driven sampling.
 
-The following flag combinations are used:
+The `dr_method` parameter controls the strategy:
 
-| Strategy | `use_ext` | `randomize_on_reset` |
-| :--- | :--- | :--- |
-| **No-DR** | `false` | `false` |
-| **UDR** | `false` | `true` |
-| **AdvBeta** | `true` | `true` |
-
-> **Note:** The combination `use_ext=true` and `randomize_on_reset=false` is intentionally avoided, as the curriculum would never be applied.
+| Strategy | `dr_method` |
+| :--- | :--- |
+| **No-DR** | `none` |
+| **UDR** | `udr` |
+| **AdvBeta** | `adv_beta` |
 
 ---
+
 ## Environment Configuration
-Before running any scripts, you must set the required environment variables for MuJoCo and Python buffering.
+Before running any scripts, set the required environment variables:
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/<user>/.mujoco/mujoco210/bin
+export PYTHONPATH=/path/to/mldl_rl_project_25
+export PYTHONUNBUFFERED=1
+```
+Replace `/home/<user>` and `/path/to/mldl_rl_project_25` with your actual paths. `PYTHONPATH` is required so that all scripts can import `env.custom_hopper` regardless of which subdirectory they live in.
+
+---
 
 ## Installation Check
 After installing all dependencies and MuJoCo (see sections above), verify the setup by running:
@@ -151,95 +152,75 @@ wandb login
 ```
 Launch the sweep:
 ```bash
-python sweep_runner_ac.py
+python ActorCritic/sweep_runner.py
 ```
 The sweep evaluates different combinations of:
 * Random seeds (e.g., 42, 43, 44)
 * Actor–Critic vs REINFORCE
 * Baseline values
+* Domain randomization strategy (`none`, `udr`)
 
 ### Evaluation (Actor–Critic / REINFORCE)
-Evaluate a trained model:
+Evaluate a trained model on the target domain (default):
 ```bash
-python test_actor_critic.py \
-  --model AC_Seed42.mdl \
+python ActorCritic/test.py \
+  --model AC_seed42_ac_none.mdl \
   --episodes 10 \
   --device cpu
 ```
-The evaluation can be performed on either the source or target domain depending on the environment selected in the test script.
+To run a sanity check on the source domain, add `--env-id CustomHopper-source-v0`.
+
+| Flag | Description |
+| :--- | :--- |
+| `--model <str>` | Model filename (loaded from `ActorCritic/saved_models/`) |
+| `--env-id <str>` | Environment id (default: `CustomHopper-target-v0`) |
+| `--episodes <int>` | Number of test episodes |
+| `--device <str>` | Device (`cpu` or `cuda`) |
+| `--render` | Render the simulator |
 
 ---
 
-## Soft Actor-Critic (SAC)
+## Soft Actor–Critic (SAC)
 
 ### Training (Single Run)
 Train SAC on the source domain:
 ```bash
 python Sac/train_sac.py \
   --env-id CustomHopper-source-v0 \
-  --seed 42
+  --seed 42 \
+  --dr-method udr
 ```
 
-In this project, domain randomization and curriculum behavior are controlled internally through configuration flags passed to the environment.
+The `--dr-method` flag accepts `none`, `udr`, or `adv_beta`. SAC hyperparameters are loaded from `Sac/sweep_config_sac.yaml`. When using `adv_beta`, the curriculum hyperparameters, such as buffer size, warmup episodes, tau, etc., are loaded from `Sac/adv_beta_config.yaml`.
 
 ### Training with Weights & Biases Sweep (Recommended)
 Launch the SAC sweep:
 ```bash
-python sweep_runner_sac.py
+python Sac/sweep_runner_sac.py
 ```
 
 The sweep explores:
 * Multiple random seeds (e.g., 42, 43, 44)
-* No-DR, UDR, and AdvBeta configurations
+* Domain randomization strategy (`none`, `udr`, `adv_beta`)
 * Fixed SAC hyperparameters for fair comparison
 
-### SAC Evaluation (Source → Source and Source → Target)
-Evaluate a trained SAC policy:
+### SAC Evaluation
+Evaluate a trained SAC policy on the target domain (default):
 ```bash
-python test_sac.py \
-  --model sac_final_seed42_id_SAC_seed42_UDR \
+python Sac/test_sb3.py \
+  --model sac_final_seed42_id_SAC_seed42_udr \
   --episodes 10 \
   --device cpu
 ```
-#### Optional Evaluation Flags
+To run a sanity check on the source domain, add `--env-id CustomHopper-source-v0`.
 
 | Flag | Description |
 | :--- | :--- |
-| `--randomize-on-reset` | Enable domain randomization during evaluation |
-| `--use-ext` | Enable Adversarial Beta sampling |
-| `--seed <int>` | Fix environment randomness |
+| `--model <str>` | Model filename (loaded from `Sac/saved_models/`) |
+| `--env-id <str>` | Environment id (default: `CustomHopper-target-v0`) |
+| `--episodes <int>` | Number of test episodes |
+| `--device <str>` | Device (`cpu` or `cuda`) |
 | `--render` | Render the simulator |
-
-#### Examples
-
-**Evaluate on target domain with No Domain Randomization:**
-```bash
-python test_sac.py \
-  --model sac_final_seed42_id_SAC_seed42_NoDR \
-  --episodes 10 \
-  --device cpu
-```
-
-**Evaluate on target domain with Uniform Domain Randomization:**
-```bash
-python test_sac.py \
-  --model sac_final_seed42_id_SAC_seed42_UDR \
-  --episodes 10 \
-  --device cpu \
-  --randomize-on-reset \
-  --seed 42
-```
-
-**Evaluate on target domain with Adversarial Beta Curriculum:**
-```bash
-python test_sac.py \
-  --model sac_final_seed42_id_SAC_seed42_AdvBeta \
-  --episodes 10 \
-  --device cpu \
-  --randomize-on-reset \
-  --use-ext \
-  --seed 42
-```
 
 ---
 
@@ -265,3 +246,8 @@ To ensure fair and reproducible comparisons:
 4.  **Evaluation** is performed on both source and target domains.
 
 Performance is analyzed in terms of average return, variability across episodes, and robustness under domain shift.
+
+---
+
+## Authors
+

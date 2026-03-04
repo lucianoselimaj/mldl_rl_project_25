@@ -1,8 +1,9 @@
+import os
 import wandb
 import yaml
 from train_actor_critic import train_actor_critic
 
-SWEEP_CONFIG_PATH = "sweep_config_ac.yaml"
+SWEEP_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "sweep_config_ac.yaml")
 
 
 def sweep_train():
@@ -20,10 +21,8 @@ def sweep_train():
         cfg = wandb.config
 
         # Generate a unique name for this run based on params
-        if cfg.actor_critic:
-            run.name = f"AC_Seed{cfg.seed}"
-        else:
-            run.name = f"REINFORCE_Base{cfg.baseline}_Seed{cfg.seed}"
+        algo = "AC" if cfg.actor_critic else f"REINFORCE_Base{cfg.baseline}"
+        run.name = f"{algo}_seed{cfg.seed}_{cfg.dr_method}"
 
         # Call your training function
         train_actor_critic(config=cfg, run_name=run.name)

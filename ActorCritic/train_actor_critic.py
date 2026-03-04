@@ -5,16 +5,13 @@ import torch
 import wandb
 import numpy as np
 import gym
-from utils.utils import to_bool
-
-
 
 from env.custom_hopper import *   # registers envs
-from agent import Agent, Policy
+from ActorCritic.agent import Agent, Policy
 
 
 def set_seed(seed: int):
-    """Minimal seeding: enough for fair comparisons."""
+    """Minimal seeding function."""
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)       # policy init + action sampling
@@ -28,15 +25,15 @@ def train_actor_critic(config=None, run_name=None):
 
     cfg = wandb.config
 
-    # ---- SEED (minimal) ----
+    # seed
     seed = int(getattr(cfg, "seed", 0))
     set_seed(seed)
-    # ------------------------
 
     env_id = getattr(cfg, "env_id", "CustomHopper-source-v0")
+    dr_method = getattr(cfg, "dr_method", "none")
     env = gym.make(
         env_id,
-        randomize_on_reset=to_bool(getattr(cfg, "randomize_on_reset", False))
+        randomize_on_reset=(dr_method == "udr")
     )
 
     print('Action space:', env.action_space)
@@ -76,7 +73,7 @@ def train_actor_critic(config=None, run_name=None):
         agent.update_policy()
 
         # --- WANDB LOGGING ---
-        # Log metrics every episode (or every N episodes to reduce traffic)
+        # Log metrics every episode (or every N episodes)
         wandb.log({
             "training/episode_return": train_reward,
             "training/episode": episode,
@@ -87,7 +84,7 @@ def train_actor_critic(config=None, run_name=None):
         if (episode + 1) % 1000 == 0:
             print(f'Training episode: {episode} | Return: {train_reward}')
 
-    save_dir = os.path.join("saved_models")
+    save_dir = os.path.join(os.path.dirname(__file__), "saved_models")
     os.makedirs(save_dir, exist_ok=True)
 
     # We use the run_name passed to the function (or wandb.run.name if available)
@@ -106,7 +103,8 @@ if __name__ == "__main__":
     parser.add_argument("--actor-critic", action="store_true")
     parser.add_argument("--baseline", default=0.0, type=float)
     parser.add_argument("--seed", default=0, type=int)
-    parser.add_argument("--randomize_on_reset", action="store_true", default=False)
+    parser.add_argument("--dr-method", default="none", choices=["none", "udr"])
 
     args = parser.parse_args()
-    train_actor_critic(config=vars(args), run_name="manual_run")
+    run_name = f"AC_seed{args.seed}_{'ac' if args.actor_critic else 'reinforce'}_{args.dr_method}"
+    train_actor_critic(config=vars(args), run_name=run_name)

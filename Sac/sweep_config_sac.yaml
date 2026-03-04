@@ -9,10 +9,8 @@ parameters:
     value: "MlpPolicy"
   seed:
     values: [42,43,44]
-  use_ext:
-    values: [ true, false ]
-  randomize_on_reset:
-    values: [ true, false ]
+  dr_method:
+    values: ["none", "udr", "adv_beta"]
 
   # Training parameters
   total_timesteps:
