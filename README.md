@@ -2,6 +2,14 @@
 
 Implementation of "Project 4: Reinforcement Learning" for the Machine Learning and Deep Learning (MLDL) 2025 course at Polytechnic of Turin. Official assignment at [Google Doc](https://docs.google.com/document/d/16Fy0gUj-HKxweQaJf97b_lTeqM_9axJa4_SdqpP_FaE/edit?usp=sharing).
 
+**Authors:**
+- Francesco Vanella
+- Gabriele Imperiale
+- Luciano Selimaj
+
+*Politecnico di Torino — MSc in Data Science and Engineering*
+
+---
 
 ## Getting started
 
@@ -249,5 +257,8 @@ Performance is analyzed in terms of average return, variability across episodes,
 
 ---
 
-## Authors
+# Copyright & License
 
+Copyright (c) 2026 Francesco Vanella, Gabriele Imperiale, Luciano Selimaj
+
+The code and accompanying materials are released under the [MIT License](LICENSE).
