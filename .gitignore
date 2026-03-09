@@ -9,6 +9,4 @@ wandb/
 wandb/
 tb_logs/
 models/
-saved_models/
-**/saved_models/
 .idea/

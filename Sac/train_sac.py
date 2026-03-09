@@ -98,7 +98,7 @@ def train_sac(config, run_name, beta_config=None):
 
     save_dir = os.path.join(os.path.dirname(__file__), "saved_models")
     os.makedirs(save_dir, exist_ok=True)
-    model.save(os.path.join(save_dir, f"sac_final_seed{config['seed']}_id_{run_name}"))
+    model.save(os.path.join(save_dir, run_name))
 
     # Plot beta distribution in a pdf file
     if use_beta:

@@ -7,7 +7,7 @@ Implementation of "Project 4: Reinforcement Learning" for the Machine Learning a
 - Gabriele Imperiale
 - Luciano Selimaj
 
-*Politecnico di Torino — MSc in Data Science and Engineering*
+[Project Report](Report.pdf)
 
 ---
 
@@ -172,7 +172,7 @@ The sweep evaluates different combinations of:
 Evaluate a trained model on the target domain (default):
 ```bash
 python ActorCritic/test.py \
-  --model AC_seed42_ac_none.mdl \
+  --model AC_Seed42.mdl \
   --episodes 10 \
   --device cpu
 ```
@@ -216,7 +216,7 @@ The sweep explores:
 Evaluate a trained SAC policy on the target domain (default):
 ```bash
 python Sac/test_sb3.py \
-  --model sac_final_seed42_id_SAC_seed42_udr \
+  --model SAC_seed42_udr \
   --episodes 10 \
   --device cpu
 ```
